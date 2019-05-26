@@ -1,0 +1,5 @@
+servers:
+  server-one:
+    max-players: 80
+    priority-queue: true
+    lobby: false
