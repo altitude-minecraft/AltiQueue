@@ -1,24 +1,27 @@
 package com.alttd.altiqueue.utils;
 
-import java.lang.reflect.ParameterizedType;
-
 /**
  * Represents a mutable data type for a type that may not normally be mutable, either because it is final, primitive, or sealed.
  *
- * @param <E> the type of this mutable value.
+ * @param <T> the type of this mutable value.
  */
-public class MutableValue<E>
+public class MutableValue<T>
 {
-    private E value;
+    private T value;
 
     /**
      * Constructs a new MutableValue with the given object.
      *
-     * @param e the value to be stored.
+     * @param t the value to be stored.
      */
-    public MutableValue(E e)
+    public MutableValue(T t)
     {
-        this.value = e;
+        if (t == null)
+        {
+            throw new IllegalArgumentException("Value can't be null.");
+        }
+
+        this.value = t;
     }
 
     /**
@@ -26,7 +29,7 @@ public class MutableValue<E>
      *
      * @return the value that is currently stored.
      */
-    public E getValue()
+    public T getValue()
     {
         return value;
     }
@@ -34,15 +37,24 @@ public class MutableValue<E>
     /**
      * Sets the value that is currently stored.
      *
-     * @param e the new value to be stored.
+     * @param t the new value to be stored.
      */
-    public void setValue(E e)
+    public void setValue(T t)
     {
-        this.value = e;
+        if (t == null)
+        {
+            throw new IllegalArgumentException("Value can't be null.");
+        }
+        this.value = t;
     }
 
-    public Class<? extends E> getType()
+    public Class<T> getType()
     {
-        return (Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        if (value == null)
+        {
+            throw new IllegalStateException("Value can't be null.");
+        }
+
+        return (Class<T>) value.getClass();
     }
 }

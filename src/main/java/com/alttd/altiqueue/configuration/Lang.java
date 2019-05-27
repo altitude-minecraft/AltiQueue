@@ -8,6 +8,7 @@ import com.alttd.altiqueue.AltiQueue;
 import com.alttd.altiqueue.utils.CollectionUtils;
 import com.alttd.altiqueue.utils.MutableValue;
 import com.alttd.altiqueue.utils.StringUtils;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.config.Configuration;
@@ -24,7 +25,7 @@ public enum Lang
     /**
      * The prefix before most of the lang messages.
      */
-    PREFIX("prefix.text", "§3[§bFortuneBlocks§3] §f{message}"),
+    PREFIX("prefix", "§3[§bAltiQueue§3] §f{message}"),
     /**
      * When a player misuses a command.
      */
@@ -38,57 +39,22 @@ public enum Lang
      */
     SUCCESS("success_message", "§2§lSUCCESS §a» §f{message}"),
     /**
-     * When players do not have permission to do something.
+     * When a player tries to queue for a server they are already queued for.
      */
-    NO_PERMS("no_permissions", "You don't have permission to do that."),
+    ALREADY_QUEUED("already-queued", "You are already in queue for §b{server}§f. You are at position §b{position}§f."),
     /**
-     * When a player does not have access to any sub-commands.
+     * When a user tries to directly connect to a server and it is full.
      */
-    NO_SUBS("no_sub_access", "You don't have access to any sub-commands."),
+    DIRECT_CONNECT_FULL("direct-connect-full", "§b{server}§f is full. You are at position §b{position}§f in queue. Purchase a donor rank to get a priority queue."),
     /**
-     * When a player mines a block and does not have room in their inventory.
+     * When a player leaves a queue.
      */
-    INVENTORY_FULL("inventory_full", "Your inventory is full."),
+    LEFT_QUEUE("left-queue", "You have left queue for §b{server}."),
     /**
-     * When the configuration files were successfully reloaded.
+     * When a player joins a queue.
      */
-    RELOAD("reload", "Reloaded the config and lang files."),
-    /**
-     * The header and footer for all commands.
-     */
-    HEADER_FOOTER("header_footer:", "&7&m-----------------------------------"),
-    /**
-     * When the console tries to run a player-only command.
-     */
-    ONLY_PLAYERS("only_players", "Only players can run that command."),
-    /**
-     * When a new material is tracked.
-     */
-    MATERIALS_ADD("materials.add", "The material §b{material}§f is now affected by fortune."),
-    /**
-     * When a material is untracked.
-     */
-    MATERIALS_REMOVE("materials.remove", "The material §b{material}§f no longer is affected by fortune."),
-    /**
-     * When a user tries to track an already tracked material.
-     */
-    MATERIALS_TRACKED("materials.tracked", "That material is already tracked."),
-    /**
-     * When a user tries to untrack a material that is not tracked.
-     */
-    MATERIALS_NOT_TRACKED("materials.not_tracked", "That material is not tracked."),
-    /**
-     * When an invalid item is entered by the user.
-     */
-    MATERIALS_INVALID_ITEM("materials.invalid_item", "Item not found."),
-    /**
-     * When the user tries to add a material that is not a block.
-     */
-    MATERIALS_NOT_BLOCK("materials.not_block", "That is not a block."),
-    /**
-     * When the user lists off the tracked materials.
-     */
-    MATERIALS_LIST("materials.list", "  §6- §e{material}");
+    JOINED_QUEUE("joined-queue", "You have joined the queue for §b{server}§f. You are at position §b{position}§f.");
+
 
     private String[] message;
 
@@ -138,8 +104,10 @@ public enum Lang
      */
     public void send(CommandSender sender, Object... parameters)
     {
-        String message = StringUtils.compile(getMessage(parameters));
-        sender.sendMessage(new TextComponent(message));
+        for (String message : getMessage(parameters))
+        {
+            sender.sendMessage(new TextComponent(message));
+        }
     }
 
     /**
@@ -196,7 +164,7 @@ public enum Lang
         String[] args = Arrays.copyOf(message, message.length);
         for (int i = 0; i < args.length; i++)
         {
-            args[i] = renderString(args[i], parameters);
+            args[i] = ChatColor.translateAlternateColorCodes('&', renderString(args[i], parameters));
         }
         return args;
     }
@@ -244,6 +212,11 @@ public enum Lang
                         save.setValue(true);
                     }
                 }
+            }
+
+            if (save.getValue())
+            {
+                ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, langFile);
             }
         }
         catch (IOException ex)

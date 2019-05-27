@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
+import com.alttd.altiqueue.configuration.Config;
+import com.alttd.altiqueue.configuration.Lang;
 import com.alttd.altiqueue.listeners.ConnectionListener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
@@ -26,21 +28,29 @@ public class AltiQueue extends Plugin
         getProxy().getPluginManager().registerListener(this, new ConnectionListener());
 
         ServerManager.initialize();
+
+        // check lang
+        File langFile = new File(getDataFolder(), "lang.yml");
+        if (!langFile.exists())
+        {
+            saveResource("lang.yml");
+        }
+        Lang.update();
+
+        // check config
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists())
+        {
+            saveResource("config.yml");
+        }
+        Config.update();
     }
 
     public void saveDefaultConfig()
     {
         try
         {
-            File file = new File(getDataFolder(), "config.yml");
-
-            // check if the file exists
-            if (!file.exists())
-            {
-                // if it doesn't, save it
-                InputStream in = getResourceAsStream("config.yml");
-                Files.copy(in, file.toPath());
-            }
+            saveResource("config.yml");
 
             config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(getDataFolder(), "config.yml"));
         }
@@ -50,9 +60,25 @@ public class AltiQueue extends Plugin
         }
     }
 
-    public static Configuration getConfig()
+    public static void saveResource(String name)
     {
-        return instance.config;
+        File folder = instance.getDataFolder();
+        if (!folder.exists())
+        {
+            folder.mkdir();
+        }
+        File file = new File(folder, name);
+        if (!file.exists())
+        {
+            try (InputStream in = instance.getResourceAsStream(name))
+            {
+                Files.copy(in, file.toPath());
+            }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
     }
 
     public static AltiQueue getInstance()

@@ -1,9 +1,8 @@
 package com.alttd.altiqueue;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.UUID;
 
 import net.md_5.bungee.api.config.ServerInfo;
@@ -20,9 +19,9 @@ public class ServerWrapper
 
     private boolean lobby;
 
-    private Queue<UUID> queue;
+    private LinkedList<UUID> queue;
 
-    private Queue<UUID> priorityQueue;
+    private LinkedList<UUID> priorityQueue;
 
     public ServerWrapper(ServerInfo serverInfo, Configuration configuration)
     {
@@ -32,11 +31,11 @@ public class ServerWrapper
         this.hasPriorityQueue = configuration.getBoolean("servers." + serverInfo.getName() + ".priority-queue");
         this.lobby = configuration.getBoolean("servers." + serverInfo.getName() + ".lobby");
 
-        this.queue = new PriorityQueue<>();
+        this.queue = new LinkedList<>();
 
         if (this.hasPriorityQueue)
         {
-            this.priorityQueue = new PriorityQueue<>();
+            this.priorityQueue = new LinkedList<>();
         }
     }
 
@@ -66,7 +65,7 @@ public class ServerWrapper
         }
 
         // add them to the appropriate queue
-        if (player.hasPermission(Permission.PRIORITY_QUEUE.getPermission()))
+        if (hasPriorityQueue() && player.hasPermission(Permission.PRIORITY_QUEUE.getPermission()))
         {
             priorityQueue.add(player.getUniqueId());
             return QueueResponse.ADDED_PRIORITY;
@@ -74,6 +73,29 @@ public class ServerWrapper
 
         queue.add(player.getUniqueId());
         return QueueResponse.ADDED_STANDARD;
+    }
+
+    /**
+     * Returns the position that the given player is in the server's queue.
+     *
+     * @param uuid the uuid of the player.
+     *
+     * @return the position that the given player is in the server's queue.
+     */
+    public int getPosition(UUID uuid)
+    {
+        if (priorityQueue.contains(uuid))
+        {
+            return priorityQueue.indexOf(uuid) + 1;
+        }
+        else if (queue.contains(uuid))
+        {
+            return priorityQueue.size() + queue.indexOf(uuid) + 1;
+        }
+        else
+        {
+            return -1;
+        }
     }
 
     /**
@@ -121,21 +143,41 @@ public class ServerWrapper
         return players;
     }
 
+    /**
+     * Returns the maximum number of players the server supports.
+     *
+     * @return the maximum number of players the server supports.
+     */
     public int getMaxPlayers()
     {
         return maxPlayers;
     }
 
+    /**
+     * Returns whether or not this server has a priority queue.
+     *
+     * @return whether or not this server has a priority queue.
+     */
     public boolean hasPriorityQueue()
     {
         return hasPriorityQueue;
     }
 
+    /**
+     * Returns the {@link ServerInfo} for this {@link ServerWrapper}.
+     *
+     * @return the {@link ServerInfo} for this {@link ServerWrapper}.
+     */
     public ServerInfo getServerInfo()
     {
         return serverInfo;
     }
 
+    /**
+     * Returns whether or not this server is a lobby.
+     *
+     * @return whether or not this server is a lobby.
+     */
     public boolean isLobby()
     {
         return lobby;

@@ -60,10 +60,12 @@ public final class ServerManager
                     {
                         // and send them to that server!
                         ProxyServer.getInstance().getPlayer(playerUuid).connect(serverWrapper.getServerInfo());
+                        // TODO let them know they were sent
+                        // TODO remove them from the queue
                     }
                 }
             }
-        }, Config.QUEUE_FREQUENCY.getValue(), TimeUnit.SECONDS);
+        }, Config.QUEUE_FREQUENCY.getValue(), Config.QUEUE_FREQUENCY.getValue(), TimeUnit.SECONDS);
     }
 
     /**
@@ -160,7 +162,7 @@ public final class ServerManager
 
         int targetIndex = 0;
 
-        if (Config.LOBBY_STRATEGY.getValue().equals("LOWEST"))
+        if (Config.LOBBY_STRATEGY.getValue().equalsIgnoreCase("LOWEST"))
         {
             int lowestCount = Integer.MAX_VALUE;
             int count;
@@ -172,7 +174,6 @@ public final class ServerManager
                     lowestCount = count;
                     targetIndex = i;
                 }
-
             }
         }
         else
@@ -181,6 +182,26 @@ public final class ServerManager
         }
 
         return lobbies.get(targetIndex).getServerInfo();
+    }
+
+    /**
+     * Returns the server the given player is queued in. If the player is not queued for a server, this method returns
+     * -1.
+     *
+     * @param uuid the uuid of the player to look for.
+     *
+     * @return the server the given player is queued in.
+     */
+    public static ServerWrapper getQueuedServer(UUID uuid)
+    {
+        for (ServerWrapper serverWrapper : servers)
+        {
+            if (serverWrapper.getPosition(uuid) != -1)
+            {
+                return serverWrapper;
+            }
+        }
+        return null;
     }
 
     public static boolean isInitialized()

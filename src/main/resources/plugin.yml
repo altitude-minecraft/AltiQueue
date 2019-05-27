@@ -1,0 +1,4 @@
+name: AltiQueue
+main: com.alttd.altiqueue.AltiQueue
+version: ${project.version}
+author: Michael Ziluck

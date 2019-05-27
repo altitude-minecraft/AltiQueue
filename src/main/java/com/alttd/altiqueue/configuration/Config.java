@@ -1,10 +1,14 @@
 package com.alttd.altiqueue.configuration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
 
 import com.alttd.altiqueue.AltiQueue;
 import com.alttd.altiqueue.utils.MutableValue;
 import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
 
 public final class Config
 {
@@ -19,15 +23,29 @@ public final class Config
 
     public static void update()
     {
-        Configuration config = AltiQueue.getConfig();
+        File configFile = new File(AltiQueue.getInstance().getDataFolder(), "config.yml");
+        Configuration config;
+        try
+        {
+            config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
 
-        // checks whether or not there is a need to save the config file
-        MutableValue<Boolean> save = new MutableValue<>(false);
+            // checks whether or not there is a need to save the config file
+            final MutableValue<Boolean> save = new MutableValue<>(false);
 
-        updateValue(config, save, "version", VERSION);
+            updateValue(config, save, "version", VERSION);
 
-        // options related to connecting players to a lobby
-        updateValue(config, save, "lobby-strategy", LOBBY_STRATEGY);
+            updateValue(config, save, "lobby-strategy", LOBBY_STRATEGY);
+            updateValue(config, save, "queue-frequency", QUEUE_FREQUENCY);
+
+            if (save.getValue())
+            {
+                ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, configFile);
+            }
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -67,6 +85,7 @@ public final class Config
         }
         catch (Exception ex)
         {
+            ex.printStackTrace();
             return false;
         }
         return true;
@@ -83,7 +102,7 @@ public final class Config
     }
 
     @SuppressWarnings("unchecked")
-    public static <E> E loadValue(Configuration config, Class<E> clazz, String location)
+    public static <T> T loadValue(Configuration config, Class<? super T> clazz, String location)
     {
         if (config == null)
         {
@@ -96,23 +115,23 @@ public final class Config
 
         if (clazz == Integer.class)
         {
-            return (E) Integer.valueOf(config.getInt(location));
+            return (T) Integer.valueOf(config.getInt(location));
         }
         else if (clazz == String.class)
         {
-            return (E) config.getString(location);
+            return (T) config.getString(location);
         }
         else if (clazz == Boolean.class)
         {
-            return (E) Boolean.valueOf(config.getBoolean(location));
+            return (T) Boolean.valueOf(config.getBoolean(location));
         }
         else if (clazz == Double.class)
         {
-            return (E) Double.valueOf(config.getDouble(location));
+            return (T) Double.valueOf(config.getDouble(location));
         }
         else if (Enum.class.isAssignableFrom(clazz))
         {
-            return (E) Enum.valueOf((Class<? extends Enum>) clazz, Objects.requireNonNull(config.getString(location)));
+            return (T) Enum.valueOf((Class<? extends Enum>) clazz, Objects.requireNonNull(config.getString(location)));
         }
 
         // TODO throw exception since the type is weird
