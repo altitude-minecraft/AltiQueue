@@ -130,7 +130,7 @@ public enum Lang
     {
         for (String message : getMessage(parameters))
         {
-            sender.sendMessage(new TextComponent(message));
+            sender.sendMessage(TextComponent.fromLegacyText(message));
         }
     }
 
