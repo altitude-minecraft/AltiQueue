@@ -1,6 +1,7 @@
 package com.alttd.altiqueue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -48,29 +49,32 @@ public class ServerWrapper
      */
     public QueueResponse addQueue(ProxiedPlayer player)
     {
-        // the server isn't full or they can skip the queue completely, send em through
+        // the server isn't full and there's no queue, send em through
         if (serverInfo.getPlayers().size() < maxPlayers)
         {
             return QueueResponse.NOT_FULL;
         }
 
+        // they have permission to skip queue, send em through
         if (player.hasPermission(Permission.SKIP_QUEUE.getPermission()))
         {
             return QueueResponse.SKIP_QUEUE;
         }
 
+        // they're already in queue
         if (priorityQueue.contains(player.getUniqueId()) || queue.contains(player.getUniqueId()))
         {
             return QueueResponse.ALREADY_ADDED;
         }
 
-        // add them to the appropriate queue
+        // they have the priority queue permission
         if (hasPriorityQueue() && player.hasPermission(Permission.PRIORITY_QUEUE.getPermission()))
         {
             priorityQueue.add(player.getUniqueId());
             return QueueResponse.ADDED_PRIORITY;
         }
 
+        // they have normal permissions
         queue.add(player.getUniqueId());
         return QueueResponse.ADDED_STANDARD;
     }
@@ -99,6 +103,19 @@ public class ServerWrapper
     }
 
     /**
+     * Removes the given player from the queue. This method will return {@code true} if they were in queue, otherwise
+     * it will return {@code false}.
+     *
+     * @param uuid the uuid of the player to remove.
+     *
+     * @return {@code true} if they were in queue, {@code false} otherwise.
+     */
+    public boolean removeFromQueue(UUID uuid)
+    {
+        return priorityQueue.remove(uuid) || queue.remove(uuid);
+    }
+
+    /**
      * Returns {@code true} if there are less players connected than the limit.
      *
      * @return {@code true} if there are less players connected than the limit.
@@ -106,6 +123,16 @@ public class ServerWrapper
     public boolean isFull()
     {
         return serverInfo.getPlayers().size() >= maxPlayers;
+    }
+
+    /**
+     * Returns {@code true} if there is an active queue for the server.
+     *
+     * @return {@code true} if there is an active queue for the server.
+     */
+    public boolean hasQueue()
+    {
+        return !queue.isEmpty() || !priorityQueue.isEmpty();
     }
 
     /**
@@ -118,8 +145,19 @@ public class ServerWrapper
         return maxPlayers - serverInfo.getPlayers().size();
     }
 
+    public List<UUID> getNormalQueue()
+    {
+        return Collections.unmodifiableList(queue);
+    }
+
+    public List<UUID> getPriorityQueue()
+    {
+        return Collections.unmodifiableList(priorityQueue);
+    }
+
     /**
-     * Returns the players who are at the beginning of the queue.
+     * Returns the players who are at the beginning of the queue. This removes the player from the queue, so don't
+     * call it unless you want to pop UUIDs out.
      *
      * @param amount the amount of players to return.
      *

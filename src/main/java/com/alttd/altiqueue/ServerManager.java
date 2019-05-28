@@ -12,8 +12,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alttd.altiqueue.configuration.Config;
+import com.alttd.altiqueue.configuration.Lang;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -52,16 +54,48 @@ public final class ServerManager
             // go through the servers that are not lobbies...
             for (ServerWrapper serverWrapper : servers.stream().filter(wrapper -> !wrapper.isLobby()).collect(Collectors.toList()))
             {
-                // check if they are not full...
-                if (!serverWrapper.isFull())
+                // check if they have room and if there's an active queue...
+                if (!serverWrapper.isFull() && serverWrapper.hasQueue())
                 {
+                    List<UUID> queuedPlayers = serverWrapper.getQueuedPlayers(serverWrapper.getRoom());
+
                     // go through the queued players that we have room for...
-                    for (UUID playerUuid : serverWrapper.getQueuedPlayers(serverWrapper.getRoom()))
+                    while (!queuedPlayers.isEmpty())
                     {
-                        // and send them to that server!
-                        ProxyServer.getInstance().getPlayer(playerUuid).connect(serverWrapper.getServerInfo());
-                        // TODO let them know they were sent
-                        // TODO remove them from the queue
+                        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(queuedPlayers.remove(0));
+
+                        if (player != null)
+                        {
+                            // and send them to that server!
+                            player.connect(serverWrapper.getServerInfo());
+                            Lang.CONNECT.sendInfo(player,
+                                                  "{server}", serverWrapper.getServerInfo().getName());
+                        }
+                    }
+
+                    System.out.println(serverWrapper.getNormalQueue().size());
+                    System.out.println(serverWrapper.getPriorityQueue().size());
+                    for (UUID uuid : serverWrapper.getNormalQueue())
+                    {
+                        System.out.println(uuid.toString());
+                    }
+                    for (UUID uuid : serverWrapper.getPriorityQueue())
+                    {
+                        System.out.println(uuid.toString());
+                    }
+
+                    // let the queued players know their position changed
+                    for (UUID uuid : serverWrapper.getNormalQueue())
+                    {
+                        Lang.POSITION_UPDATE.sendInfo(ProxyServer.getInstance().getPlayer(uuid),
+                                                      "{position}", serverWrapper.getPosition(uuid),
+                                                      "{server}", serverWrapper.getServerInfo().getName());
+                    }
+                    for (UUID uuid : serverWrapper.getPriorityQueue())
+                    {
+                        Lang.POSITION_UPDATE.sendInfo(ProxyServer.getInstance().getPlayer(uuid),
+                                                      "{position}", serverWrapper.getPosition(uuid),
+                                                      "{server}", serverWrapper.getServerInfo().getName());
                     }
                 }
             }

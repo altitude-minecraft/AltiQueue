@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
+import com.alttd.altiqueue.commands.QueueCommand;
 import com.alttd.altiqueue.configuration.Config;
 import com.alttd.altiqueue.configuration.Lang;
 import com.alttd.altiqueue.listeners.ConnectionListener;
@@ -44,6 +45,13 @@ public class AltiQueue extends Plugin
             saveResource("config.yml");
         }
         Config.update();
+
+        registerCommands();
+    }
+
+    public void registerCommands()
+    {
+        getProxy().getPluginManager().registerCommand(this, new QueueCommand());
     }
 
     public void saveDefaultConfig()

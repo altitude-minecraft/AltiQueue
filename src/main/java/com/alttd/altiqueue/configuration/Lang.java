@@ -25,35 +25,47 @@ public enum Lang
     /**
      * The prefix before most of the lang messages.
      */
-    PREFIX("prefix", "§3[§bAltiQueue§3] §f{message}"),
-    /**
-     * When a player misuses a command.
-     */
-    USAGE("usage_message", "§6§lUSAGE §e» §f{usage}"),
-    /**
-     * The prefix to an error message.
-     */
-    ERROR("error_message", "§4§lERROR §c» §7{message}"),
-    /**
-     * The prefix to a success message.
-     */
-    SUCCESS("success_message", "§2§lSUCCESS §a» §f{message}"),
+    PREFIX("prefix", "&3[&bAltiQueue&3] &f{message}"),
     /**
      * When a player tries to queue for a server they are already queued for.
      */
-    ALREADY_QUEUED("already-queued", "You are already in queue for §b{server}§f. You are at position §b{position}§f."),
+    ALREADY_QUEUED("already-queued", "You are already in queue for &b{server}&f. You are at position &c{position}&f."),
     /**
      * When a user tries to directly connect to a server and it is full.
      */
-    DIRECT_CONNECT_FULL("direct-connect-full", "§b{server}§f is full. You are at position §b{position}§f in queue. Purchase a donor rank to get a priority queue."),
+    DIRECT_CONNECT_FULL("direct-connect-full", "&b{server}&f is full. You are at position &c{position}&f in queue. Purchase a donor rank to get a prioritized queue. Type /q leave to leave the queue."),
     /**
      * When a player leaves a queue.
      */
-    LEFT_QUEUE("left-queue", "You have left queue for §b{server}."),
+    LEFT_QUEUE("left-queue", "You have left queue for &b{server}."),
     /**
      * When a player joins a queue.
      */
-    JOINED_QUEUE("joined-queue", "You have joined the queue for §b{server}§f. You are at position §b{position}§f.");
+    JOINED_QUEUE("joined-queue", "You have joined the queue for &b{server}&f. You are at position &c{position}&f. Purchase a donor rank to get a prioritized queue. Type /q leave to leave the queue."),
+    /**
+     * When a player is sent to the server they're queued for.
+     */
+    CONNECT("connect", "You have been connected to &b{server}&f."),
+    /**
+     * When a player tries to queue to the server they're current connected to.
+     */
+    ALREADY_CONNECTED("already-connected", "You are already connected to &b{server}&f."),
+    /**
+     * When a player's position in queue changes.
+     */
+    POSITION_UPDATE("position-update", "You are now at position &c{position}&f for &b{server}&f."),
+    /**
+     * When a player tries to check their queue status or leave queue but are not queue'd
+     */
+    NOT_QUEUED("not-queued", "&cYou are not queued for a server."),
+    /**
+     * When a non-player tries to run a player-only command.
+     */
+    ONLY_PLAYERS("only-players", "&cOnly players can run that command."),
+    /**
+     * When a player checks their queue status
+     */
+    CHECK_STATUS("check-status", "You are at position &c{position}&f for &b{server}&f. Purchase a donor rank to get a prioritized queue. Type /q leave to leave the queue.");
 
 
     private String[] message;
@@ -68,7 +80,7 @@ public enum Lang
 
     /**
      * Retrieves the message for this Lang object. This can be changed by editing the language configuration files, so
-     * they should NOT be treated as constants. Additionally their Strings should NOT be stored to reference anything.
+     * they should NOT be treated as constants. Additionally, their Strings should NOT be stored to reference anything.
      *
      * @return the message for this Lang object.
      */
@@ -85,6 +97,18 @@ public enum Lang
     public void setRawMessage(String... message)
     {
         this.message = message;
+    }
+
+    /**
+     * Retrieves the message for this Lang object. This can be changed by editing the language configuration files, so
+     * they should NOT be treated as constants. Additionally, their Strings should NOT be stored to reference anything.
+     * Lastly, this returns the combined version of the message in the case that there are multiple.
+     *
+     * @return the message for this Lang object.
+     */
+    public String getRawMessageCompiled()
+    {
+        return StringUtils.compile(message);
     }
 
     /**
@@ -107,34 +131,6 @@ public enum Lang
         for (String message : getMessage(parameters))
         {
             sender.sendMessage(new TextComponent(message));
-        }
-    }
-
-    /**
-     * Sends this Lang object but prepended with the ERROR value as well.
-     *
-     * @param sender     the CommandSender receiving the message.
-     * @param parameters all additional arguments to fill placeholders.
-     */
-    public void sendError(CommandSender sender, Object... parameters)
-    {
-        for (String line : getMessage(parameters))
-        {
-            ERROR.send(sender, "{message}", line);
-        }
-    }
-
-    /**
-     * Sends this Lang object but prepended with the SUCCESS value as well.
-     *
-     * @param sender     the CommandSender receiving the message.
-     * @param parameters all additional arguments to fill placeholders.
-     */
-    public void sendSuccess(CommandSender sender, Object... parameters)
-    {
-        for (String line : getMessage(parameters))
-        {
-            SUCCESS.send(sender, "{message}", line);
         }
     }
 
@@ -233,15 +229,5 @@ public enum Lang
     private static void error(String location)
     {
         AltiQueue.getInstance().getLogger().severe("Error loading the lang value '" + location + "'. Reverted it to default.");
-    }
-
-    public static void sendUsageMessage(CommandSender sender, String[] label, String[] parameters)
-    {
-        StringBuilder args = new StringBuilder("/" + StringUtils.compile(label));
-        for (String str : parameters)
-        {
-            args.append(" [").append(str).append("]");
-        }
-        USAGE.send(sender, "{usage}", args.toString());
     }
 }

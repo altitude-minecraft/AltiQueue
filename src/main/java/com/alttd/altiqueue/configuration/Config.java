@@ -15,11 +15,11 @@ public final class Config
     /**
      * The plugin's version
      */
-    public static final MutableValue<String> VERSION = new MutableValue<>("${project.version}");
+    public static final MutableValue<String> VERSION = new MutableValue<>("0.0.1");
 
     public static final MutableValue<String> LOBBY_STRATEGY = new MutableValue<>("LOWEST");
 
-    public static final MutableValue<Integer> QUEUE_FREQUENCY = new MutableValue<>(5);
+    public static final MutableValue<Integer> QUEUE_FREQUENCY = new MutableValue<>(2);
 
     public static void update()
     {
