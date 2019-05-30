@@ -1,5 +1,6 @@
 package com.alttd.altiqueue.listeners;
 
+import com.alttd.altiqueue.Permission;
 import com.alttd.altiqueue.QueueResponse;
 import com.alttd.altiqueue.ServerManager;
 import com.alttd.altiqueue.ServerWrapper;
@@ -16,6 +17,12 @@ public class ConnectionListener implements Listener
     {
         ServerWrapper currentServer = ServerManager.getServer(event.getPlayer().getServer());
         ServerWrapper wrapper = ServerManager.getServer(event.getTarget());
+
+        // if they can skip the queue, we don't need to worry about them
+        if (event.getPlayer().hasPermission(Permission.SKIP_QUEUE.getPermission()))
+        {
+            return;
+        }
 
         if (currentServer == null && wrapper.hasQueue())
         {

@@ -15,7 +15,7 @@ public final class Config
     /**
      * The plugin's version
      */
-    public static final MutableValue<String> VERSION = new MutableValue<>("1.1.2");
+    public static final MutableValue<String> VERSION = new MutableValue<>("1.1.3");
 
     public static final MutableValue<String> LOBBY_STRATEGY = new MutableValue<>("LOWEST");
 
