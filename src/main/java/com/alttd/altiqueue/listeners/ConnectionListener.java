@@ -24,9 +24,11 @@ public class ConnectionListener implements Listener
             return;
         }
 
+        // if they are from outside the network and their target has a queue, boot them to lobby and add them to queue
         if (currentServer == null && wrapper.hasQueue())
         {
             event.setTarget(ServerManager.getLobby());
+            wrapper.addQueue(event.getPlayer());
             Lang.DIRECT_CONNECT_FULL.sendInfo(event.getPlayer(),
                                               "{server}", wrapper.getServerInfo().getName(),
                                               "{position}", wrapper.getPosition(event.getPlayer().getUniqueId()));

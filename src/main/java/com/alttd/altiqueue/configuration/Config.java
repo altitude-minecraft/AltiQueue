@@ -12,11 +12,6 @@ import net.md_5.bungee.config.YamlConfiguration;
 
 public final class Config
 {
-    /**
-     * The plugin's version
-     */
-    public static final MutableValue<String> VERSION = new MutableValue<>("1.1.3");
-
     public static final MutableValue<String> LOBBY_STRATEGY = new MutableValue<>("LOWEST");
 
     public static final MutableValue<Integer> QUEUE_FREQUENCY = new MutableValue<>(2);
@@ -31,8 +26,6 @@ public final class Config
 
             // checks whether or not there is a need to save the config file
             final MutableValue<Boolean> save = new MutableValue<>(false);
-
-            updateValue(config, save, "version", VERSION);
 
             updateValue(config, save, "lobby-strategy", LOBBY_STRATEGY);
             updateValue(config, save, "queue-frequency", QUEUE_FREQUENCY);
