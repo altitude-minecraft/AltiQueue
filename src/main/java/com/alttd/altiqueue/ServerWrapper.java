@@ -62,7 +62,7 @@ public class ServerWrapper
         }
 
         // they're already in queue
-        if (priorityQueue.contains(player.getUniqueId()) || queue.contains(player.getUniqueId()))
+        if ((hasPriorityQueue && priorityQueue.contains(player.getUniqueId())) || queue.contains(player.getUniqueId()))
         {
             return QueueResponse.ALREADY_ADDED;
         }
@@ -88,13 +88,13 @@ public class ServerWrapper
      */
     public int getPosition(UUID uuid)
     {
-        if (priorityQueue.contains(uuid))
+        if (hasPriorityQueue && priorityQueue.contains(uuid))
         {
             return priorityQueue.indexOf(uuid) + 1;
         }
         else if (queue.contains(uuid))
         {
-            return priorityQueue.size() + queue.indexOf(uuid) + 1;
+            return (hasPriorityQueue ? priorityQueue.size() : 0) + queue.indexOf(uuid) + 1;
         }
         else
         {
@@ -112,7 +112,7 @@ public class ServerWrapper
      */
     public boolean removeFromQueue(UUID uuid)
     {
-        return priorityQueue.remove(uuid) || queue.remove(uuid);
+        return (hasPriorityQueue && priorityQueue.remove(uuid)) || queue.remove(uuid);
     }
 
     /**
@@ -132,7 +132,7 @@ public class ServerWrapper
      */
     public boolean hasQueue()
     {
-        return !queue.isEmpty() || !priorityQueue.isEmpty();
+        return !queue.isEmpty() || (hasPriorityQueue && !priorityQueue.isEmpty());
     }
 
     /**
@@ -168,7 +168,7 @@ public class ServerWrapper
         List<UUID> players = new ArrayList<>();
         while (amount > 0)
         {
-            if (priorityQueue.size() > 0)
+            if (hasPriorityQueue && priorityQueue.size() > 0)
             {
                 players.add(priorityQueue.remove());
             }
