@@ -2,3 +2,5 @@
 target/
 *.iml
 test-output/
+
+\.gradle/
