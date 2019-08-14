@@ -1,6 +1,6 @@
 node {
     stage('Checkout') {
-        checkout changelog: true
+        checkout scm
     }
     stage('Test') {
         try {
